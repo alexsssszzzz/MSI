@@ -1,0 +1,540 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local Client = Players.LocalPlayer
+local BlockFolder = workspace.Plots[Client.Name].Blocks
+
+local Functions = {
+    Tap = RS.Functions.Tap,
+    Rebirth = RS.Functions.Rebirth,
+    BuyUpgrade = RS.Functions.BuyUpgrade,
+    GemUpgrade = RS.Functions.GemUpgrade,
+    NewBlock = RS.Functions.NewBlock,
+    ClaimFrenzy = RS.Functions.ClaimFrenzy,
+    BuyEgg = RS.Functions.Minions.BuyEgg,
+    Enchant = RS.Functions.Enchant,
+    ToggleAutoClicker = RS.Functions.ToggleAutoClicker,
+    BlocksClick = RS.Functions.BlocksClick
+}
+
+local toggles = {
+    AutoTap = false, AutoMerge = false, InfObby = false, AutoRebirth = false,
+    AutoUpgrade = false, AutoGemUpgrade = false, AutoNewBlock = false,
+    AutoFrenzy = false, AutoEgg = false, AutoEnchant = false, SpeedHack = false
+}
+
+local connections = {}
+
+local function Merge()
+    for _, Block in pairs(BlockFolder:GetChildren()) do
+        for _, OtherBlock in pairs(BlockFolder:GetChildren()) do
+            if Block ~= OtherBlock and Block:GetAttribute("level") == OtherBlock:GetAttribute("level") then
+                Block.CFrame = OtherBlock.CFrame
+            end
+        end
+    end
+end
+
+local function TapBlocks()
+    for _, Block in pairs(BlockFolder:GetChildren()) do
+        Functions.Tap:FireServer(Block)
+    end
+end
+
+local function InfObby()
+    if Client.Character and Client.Character:FindFirstChild("HumanoidRootPart") then
+        firetouchinterest(Client.Character.HumanoidRootPart, workspace.Obby.Finish, 0)
+        firetouchinterest(Client.Character.HumanoidRootPart, workspace.Obby.Finish, 1)
+    end
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MergeSimulatorGUI"
+ScreenGui.Parent = game.CoreGui
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 320, 0, 380)
+Main.Position = UDim2.new(0.5, -160, 0.5, -190)
+Main.BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+
+local Shadow = Instance.new("Frame")
+Shadow.Size = UDim2.new(1, 6, 1, 6)
+Shadow.Position = UDim2.new(0, -3, 0, -3)
+Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.BackgroundTransparency = 0.8
+Shadow.ZIndex = Main.ZIndex - 1
+Shadow.Parent = Main
+
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0, 12)
+ShadowCorner.Parent = Shadow
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = Main
+
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 32)
+Header.BackgroundColor3 = Color3.fromRGB(39, 39, 42)
+Header.BorderSizePixel = 0
+Header.Parent = Main
+
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 10)
+HeaderCorner.Parent = Header
+
+local HeaderFix = Instance.new("Frame")
+HeaderFix.Size = UDim2.new(1, 0, 0, 6)
+HeaderFix.Position = UDim2.new(0, 0, 1, -6)
+HeaderFix.BackgroundColor3 = Color3.fromRGB(39, 39, 42)
+HeaderFix.BorderSizePixel = 0
+HeaderFix.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 12, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Merge Simulator"
+Title.TextColor3 = Color3.fromRGB(244, 244, 245)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamSemibold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 24, 0, 24)
+MinimizeButton.Position = UDim2.new(1, -52, 0, 4)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(63, 63, 70)
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = Color3.fromRGB(244, 244, 245)
+MinimizeButton.TextSize = 14
+MinimizeButton.Font = Enum.Font.GothamMedium
+MinimizeButton.Parent = Header
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.Parent = MinimizeButton
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 24, 0, 24)
+CloseButton.Position = UDim2.new(1, -26, 0, 4)
+CloseButton.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.TextSize = 16
+CloseButton.Font = Enum.Font.GothamMedium
+CloseButton.Parent = Header
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(1, 0, 0, 28)
+TabContainer.Position = UDim2.new(0, 0, 0, 32)
+TabContainer.BackgroundColor3 = Color3.fromRGB(32, 32, 35)
+TabContainer.BorderSizePixel = 0
+TabContainer.Parent = Main
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabLayout.Parent = TabContainer
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, 0, 1, -60)
+ContentFrame.Position = UDim2.new(0, 0, 0, 60)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = Main
+
+local tabs = {}
+local currentTab = nil
+
+local function CreateTab(name, order)
+    local TabButton = Instance.new("TextButton")
+    TabButton.Size = UDim2.new(0, 80, 1, 0)
+    TabButton.BackgroundColor3 = Color3.fromRGB(45, 45, 48)
+    TabButton.BorderSizePixel = 0
+    TabButton.Text = name
+    TabButton.TextColor3 = Color3.fromRGB(163, 163, 163)
+    TabButton.TextSize = 11
+    TabButton.Font = Enum.Font.GothamMedium
+    TabButton.LayoutOrder = order
+    TabButton.Parent = TabContainer
+
+    local TabContent = Instance.new("ScrollingFrame")
+    TabContent.Size = UDim2.new(1, 0, 1, 0)
+    TabContent.BackgroundTransparency = 1
+    TabContent.BorderSizePixel = 0
+    TabContent.ScrollBarThickness = 3
+    TabContent.ScrollBarImageColor3 = Color3.fromRGB(82, 82, 89)
+    TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabContent.Visible = false
+    TabContent.Parent = ContentFrame
+
+    local Layout = Instance.new("UIListLayout")
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.Padding = UDim.new(0, 4)
+    Layout.Parent = TabContent
+
+    local Padding = Instance.new("UIPadding")
+    Padding.PaddingLeft = UDim.new(0, 8)
+    Padding.PaddingRight = UDim.new(0, 8)
+    Padding.PaddingTop = UDim.new(0, 6)
+    Padding.PaddingBottom = UDim.new(0, 6)
+    Padding.Parent = TabContent
+
+    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContent.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 16)
+    end)
+
+    tabs[name] = {button = TabButton, content = TabContent}
+
+    TabButton.MouseButton1Click:Connect(function()
+        for tabName, tab in pairs(tabs) do
+            tab.button.BackgroundColor3 = Color3.fromRGB(45, 45, 48)
+            tab.button.TextColor3 = Color3.fromRGB(163, 163, 163)
+            tab.content.Visible = false
+        end
+        TabButton.BackgroundColor3 = Color3.fromRGB(59, 130, 246)
+        TabButton.TextColor3 = Color3.new(1, 1, 1)
+        TabContent.Visible = true
+        currentTab = name
+    end)
+
+    return TabContent
+end
+
+local function CreateToggle(parent, name, description, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(39, 39, 42)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Parent = parent
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = ToggleFrame
+
+    local ToggleTitle = Instance.new("TextLabel")
+    ToggleTitle.Size = UDim2.new(1, -80, 0, 18)
+    ToggleTitle.Position = UDim2.new(0, 10, 0, 4)
+    ToggleTitle.BackgroundTransparency = 1
+    ToggleTitle.Text = name
+    ToggleTitle.TextColor3 = Color3.fromRGB(244, 244, 245)
+    ToggleTitle.TextSize = 12
+    ToggleTitle.Font = Enum.Font.GothamSemibold
+    ToggleTitle.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleTitle.Parent = ToggleFrame
+
+    local ToggleDesc = Instance.new("TextLabel")
+    ToggleDesc.Size = UDim2.new(1, -80, 0, 12)
+    ToggleDesc.Position = UDim2.new(0, 10, 0, 22)
+    ToggleDesc.BackgroundTransparency = 1
+    ToggleDesc.Text = description
+    ToggleDesc.TextColor3 = Color3.fromRGB(161, 161, 170)
+    ToggleDesc.TextSize = 9
+    ToggleDesc.Font = Enum.Font.Gotham
+    ToggleDesc.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleDesc.Parent = ToggleFrame
+
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 44, 0, 20)
+    ToggleButton.Position = UDim2.new(1, -52, 0.5, -10)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(75, 85, 99)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Text = ""
+    ToggleButton.Parent = ToggleFrame
+
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 10)
+    ButtonCorner.Parent = ToggleButton
+
+    local ToggleKnob = Instance.new("Frame")
+    ToggleKnob.Size = UDim2.new(0, 16, 0, 16)
+    ToggleKnob.Position = UDim2.new(0, 2, 0, 2)
+    ToggleKnob.BackgroundColor3 = Color3.new(1, 1, 1)
+    ToggleKnob.BorderSizePixel = 0
+    ToggleKnob.Parent = ToggleButton
+
+    local KnobCorner = Instance.new("UICorner")
+    KnobCorner.CornerRadius = UDim.new(0, 8)
+    KnobCorner.Parent = ToggleKnob
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        toggles[name] = not toggles[name]
+        local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        if toggles[name] then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(34, 197, 94)
+            TweenService:Create(ToggleKnob, tweenInfo, {Position = UDim2.new(0, 26, 0, 2)}):Play()
+        else
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(75, 85, 99)
+            TweenService:Create(ToggleKnob, tweenInfo, {Position = UDim2.new(0, 2, 0, 2)}):Play()
+        end
+        callback(toggles[name])
+    end)
+end
+
+local function CreateButton(parent, name, description, callback, color)
+    local ButtonFrame = Instance.new("TextButton")
+    ButtonFrame.Size = UDim2.new(1, 0, 0, 36)
+    ButtonFrame.BackgroundColor3 = color or Color3.fromRGB(59, 130, 246)
+    ButtonFrame.BorderSizePixel = 0
+    ButtonFrame.Text = ""
+    ButtonFrame.Parent = parent
+
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.Parent = ButtonFrame
+
+    local ButtonTitle = Instance.new("TextLabel")
+    ButtonTitle.Size = UDim2.new(1, -16, 0, 18)
+    ButtonTitle.Position = UDim2.new(0, 8, 0, 2)
+    ButtonTitle.BackgroundTransparency = 1
+    ButtonTitle.Text = name
+    ButtonTitle.TextColor3 = Color3.new(1, 1, 1)
+    ButtonTitle.TextSize = 11
+    ButtonTitle.Font = Enum.Font.GothamSemibold
+    ButtonTitle.TextXAlignment = Enum.TextXAlignment.Left
+    ButtonTitle.Parent = ButtonFrame
+
+    local ButtonDesc = Instance.new("TextLabel")
+    ButtonDesc.Size = UDim2.new(1, -16, 0, 12)
+    ButtonDesc.Position = UDim2.new(0, 8, 0, 20)
+    ButtonDesc.BackgroundTransparency = 1
+    ButtonDesc.Text = description
+    ButtonDesc.TextColor3 = Color3.fromRGB(229, 231, 235)
+    ButtonDesc.TextSize = 8
+    ButtonDesc.Font = Enum.Font.Gotham
+    ButtonDesc.TextXAlignment = Enum.TextXAlignment.Left
+    ButtonDesc.Parent = ButtonFrame
+
+    ButtonFrame.MouseButton1Click:Connect(callback)
+
+    ButtonFrame.MouseEnter:Connect(function()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
+    end)
+
+    ButtonFrame.MouseLeave:Connect(function()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+    end)
+end
+
+local FarmTab = CreateTab("Farm", 1)
+local ProgTab = CreateTab("Progress", 2)
+local MiscTab = CreateTab("Misc", 3)
+local ActionTab = CreateTab("Actions", 4)
+
+CreateToggle(FarmTab, "AutoTap", "Automatically tap all blocks", function(state)
+    if state then
+        connections.AutoTap = RunService.Heartbeat:Connect(TapBlocks)
+    else
+        if connections.AutoTap then connections.AutoTap:Disconnect() connections.AutoTap = nil end
+    end
+end)
+
+CreateToggle(FarmTab, "AutoMerge", "Merge blocks of same level", function(state)
+    if state then
+        connections.AutoMerge = RunService.Heartbeat:Connect(Merge)
+    else
+        if connections.AutoMerge then connections.AutoMerge:Disconnect() connections.AutoMerge = nil end
+    end
+end)
+
+CreateToggle(FarmTab, "AutoNewBlock", "Spawn new blocks continuously", function(state)
+    if state then
+        connections.AutoNewBlock = coroutine.create(function()
+            while toggles.AutoNewBlock do
+                Functions.NewBlock:FireServer()
+                wait(1)
+            end
+        end)
+        coroutine.resume(connections.AutoNewBlock)
+    else
+        connections.AutoNewBlock = nil
+    end
+end)
+
+CreateToggle(ProgTab, "AutoRebirth", "Automatically rebirth when possible", function(state)
+    if state then
+        connections.AutoRebirth = coroutine.create(function()
+            while toggles.AutoRebirth do
+                Functions.Rebirth:FireServer()
+                wait(1)
+            end
+        end)
+        coroutine.resume(connections.AutoRebirth)
+    else
+        connections.AutoRebirth = nil
+    end
+end)
+
+CreateToggle(ProgTab, "AutoUpgrade", "Buy upgrades automatically", function(state)
+    if state then
+        connections.AutoUpgrade = coroutine.create(function()
+            while toggles.AutoUpgrade do
+                Functions.BuyUpgrade:FireServer()
+                wait(0.5)
+            end
+        end)
+        coroutine.resume(connections.AutoUpgrade)
+    else
+        connections.AutoUpgrade = nil
+    end
+end)
+
+CreateToggle(ProgTab, "AutoGemUpgrade", "Use gems for upgrades", function(state)
+    if state then
+        connections.AutoGemUpgrade = coroutine.create(function()
+            while toggles.AutoGemUpgrade do
+                Functions.GemUpgrade:FireServer()
+                wait(0.5)
+            end
+        end)
+        coroutine.resume(connections.AutoGemUpgrade)
+    else
+        connections.AutoGemUpgrade = nil
+    end
+end)
+
+CreateToggle(MiscTab, "InfObby", "Infinite obby completion", function(state)
+    if state then
+        connections.InfObby = coroutine.create(function()
+            while toggles.InfObby do InfObby() wait(0.1) end
+        end)
+        coroutine.resume(connections.InfObby)
+    else
+        connections.InfObby = nil
+    end
+end)
+
+CreateToggle(MiscTab, "AutoFrenzy", "Claim frenzy bonuses", function(state)
+    if state then
+        connections.AutoFrenzy = coroutine.create(function()
+            while toggles.AutoFrenzy do
+                Functions.ClaimFrenzy:FireServer()
+                wait(2)
+            end
+        end)
+        coroutine.resume(connections.AutoFrenzy)
+    else
+        connections.AutoFrenzy = nil
+    end
+end)
+
+CreateToggle(MiscTab, "AutoEgg", "Buy eggs for minions", function(state)
+    if state then
+        connections.AutoEgg = coroutine.create(function()
+            while toggles.AutoEgg do
+                Functions.BuyEgg:FireServer("Basic")
+                wait(1)
+            end
+        end)
+        coroutine.resume(connections.AutoEgg)
+    else
+        connections.AutoEgg = nil
+    end
+end)
+
+CreateToggle(MiscTab, "AutoEnchant", "Enchant blocks automatically", function(state)
+    if state then
+        connections.AutoEnchant = coroutine.create(function()
+            while toggles.AutoEnchant do
+                for _, Block in pairs(BlockFolder:GetChildren()) do
+                    Functions.Enchant:FireServer(Block)
+                end
+                wait(1)
+            end
+        end)
+        coroutine.resume(connections.AutoEnchant)
+    else
+        connections.AutoEnchant = nil
+    end
+end)
+
+CreateToggle(MiscTab, "SpeedHack", "Increase walk speed", function(state)
+    if Client.Character and Client.Character:FindFirstChild("Humanoid") then
+        Client.Character.Humanoid.WalkSpeed = state and 100 or 16
+    end
+end)
+
+CreateButton(ActionTab, "Toggle Auto Clicker", "Enable/disable built-in auto clicker", function()
+    Functions.ToggleAutoClicker:FireServer()
+end, Color3.fromRGB(59, 130, 246))
+
+CreateButton(ActionTab, "Mass Gem Upgrades", "Buy 10 gem upgrades", function()
+    for i = 1, 10 do Functions.GemUpgrade:FireServer() end
+end, Color3.fromRGB(168, 85, 247))
+
+CreateButton(ActionTab, "Mass Rebirth x10", "Perform 10 rebirths", function()
+    for i = 1, 10 do Functions.Rebirth:FireServer() wait(0.1) end
+end, Color3.fromRGB(34, 197, 94))
+
+CreateButton(ActionTab, "Buy 10 Eggs", "Purchase 10 basic eggs", function()
+    for i = 1, 10 do Functions.BuyEgg:FireServer("Basic") end
+end, Color3.fromRGB(251, 146, 60))
+
+CreateButton(ActionTab, "Enchant All Blocks", "Apply enchantments to all blocks", function()
+    for _, Block in pairs(BlockFolder:GetChildren()) do Functions.Enchant:FireServer(Block) end
+end, Color3.fromRGB(236, 72, 153))
+
+tabs["Farm"].button.MouseButton1Click()
+
+local minimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    if minimized then
+        TweenService:Create(Main, tweenInfo, {Size = UDim2.new(0, 320, 0, 32)}):Play()
+        MinimizeButton.Text = "+"
+        TabContainer.Visible = false
+        ContentFrame.Visible = false
+    else
+        TabContainer.Visible = true
+        ContentFrame.Visible = true
+        TweenService:Create(Main, tweenInfo, {Size = UDim2.new(0, 320, 0, 380)}):Play()
+        MinimizeButton.Text = "−"
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+    local closeTween = TweenService:Create(Main, tweenInfo, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)})
+    closeTween:Play()
+    closeTween.Completed:Connect(function()
+        for _, connection in pairs(connections) do
+            if typeof(connection) == "RBXScriptConnection" and connection.Connected then
+                connection:Disconnect()
+            elseif coroutine.status(connection) == "running" then
+                coroutine.close(connection)
+            end
+        end
+        for key, _ in pairs(toggles) do toggles[key] = false end
+        ScreenGui:Destroy()
+    end)
+end)
+
+MinimizeButton.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(82, 82, 91)}):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(63, 63, 70)}):Play()
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(248, 113, 113)}):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(239, 68, 68)}):Play()
+end)
